@@ -1,36 +1,52 @@
-Problem Overview
-The Round 1B challenge focuses on building an intelligent document processing system that extracts and prioritizes relevant sections and sub-sections from a collection of PDFs. The relevance is determined based on a provided persona and their specific job-to-be-done. The system must adhere to strict constraints, including offline-only execution, CPU usage, and a maximum model size of 1GB, with a processing time limit of 60 seconds for 3–5 documents.
+## Problem Overview
 
-Solution Architecture
-The solution follows a modular, resource-efficient architecture, comprising the following key stages:
+The Round 1B challenge focuses on building an intelligent document processing system that extracts and prioritizes the most relevant sections and sub-sections from a collection of PDF documents. Relevance is determined based on a given persona and their specific job-to-be-done. The solution must strictly comply with constraints such as offline execution, CPU-only processing, a maximum model size of 1GB, and a total processing time of 60 seconds for 3–5 documents.
 
-PDF Text Extraction
-Each document is processed using PyMuPDF to extract text from each page. Page content is split into paragraph-level blocks using double newlines. Each block is treated as a candidate section, with the first line used as a pseudo-title.
+---
 
-Section Embedding and Scoring
-The persona’s role and job-to-be-done are combined into a single query string. Semantic embeddings for both the query and the candidate sections are generated using the all-MiniLM-L6-v2 model from Sentence Transformers, which is compact (~80MB), fast, and CPU-friendly. Cosine similarity is used to score each section based on its relevance to the query.
+## Solution Architecture
 
-Ranking and Filtering
-Sections are sorted by their similarity scores. The top-ranked sections are selected for output, with each entry including the source document name, page number, title, and importance rank.
+The proposed system follows a modular and resource-efficient architecture, consisting of the following stages:
 
-Subsection Refinement
-Each selected section includes the full paragraph text, providing contextual information for detailed analysis and future enhancements.
+### 1. PDF Text Extraction
 
-Output Generation
-A structured JSON output is generated with metadata, extracted sections, and detailed sub-section analysis, adhering strictly to the challenge format.
+Each PDF is parsed using `PyMuPDF`, enabling fast and accurate text extraction. The content of each page is divided into paragraph-level blocks using double newline characters as delimiters. Each block is treated as a candidate section, with its first line assumed to be a pseudo-title.
 
-Justification for Approach
-Semantic Matching: Embedding-based similarity ensures generalization across diverse document types and personas.
+### 2. Section Embedding and Relevance Scoring
 
-Modularity: Components for text extraction, embedding, scoring, and output are isolated, enabling future extension or replacement.
+A semantic query is formed by combining the persona's role and their job-to-be-done. Embeddings for both the query and each candidate section are generated using the `all-MiniLM-L6-v2` model from Sentence Transformers. This model is compact (~80MB), CPU-efficient, and well-suited for offline execution. Cosine similarity is used to score each section based on its semantic relevance to the query.
 
-Efficiency: The entire pipeline executes within the specified resource and time constraints on a CPU-based environment.
+### 3. Ranking and Filtering
 
-Offline Compatibility: All models and dependencies are bundled in the Docker image, ensuring fully offline functionality.
+All candidate sections are ranked by similarity score. The top-ranked sections are selected and included in the final output. Each entry contains the source document name, page number, pseudo-title, and an importance rank indicating relevance.
 
-Future Enhancements
-More advanced persona-contextual prompt engineering for better alignment.
+### 4. Subsection Refinement
 
-Integration of NER and keyphrase extraction to improve sub-section granularity.
+The complete paragraph text of each selected section is preserved, allowing for further sub-section analysis. This provides additional context and lays the groundwork for deeper summarization or linking in future iterations.
 
-Cross-document linking or summarization for richer insight generation.
+### 5. Output Generation
+
+The final structured JSON output includes:
+- Metadata (input documents, persona, job-to-be-done, and processing timestamp)
+- Extracted sections with page number, title, and ranking
+- Subsection analysis with refined text and page-level context
+
+The output strictly follows the challenge’s required schema.
+
+---
+
+## Justification for Approach
+
+- **Semantic Matching:** Embedding-based similarity ensures robustness across diverse document types and persona-job combinations.
+- **Modularity:** Text extraction, embedding, scoring, and output generation are cleanly separated to ensure maintainability and flexibility.
+- **Efficiency:** The pipeline operates well within the provided computational and time constraints, using CPU-only processing.
+- **Offline Compatibility:** All dependencies and models are bundled inside the Docker image, ensuring full offline operability.
+
+---
+
+## Future Enhancements
+
+- Incorporation of more advanced persona-aware prompt engineering for improved alignment and section understanding.
+- Use of Named Entity Recognition (NER) and keyphrase extraction to enhance sub-section granularity and detail.
+- Cross-document linking and abstractive summarization to enable deeper insights and better context synthesis.
+
